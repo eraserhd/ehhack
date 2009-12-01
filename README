@@ -1,0 +1,24 @@
+
+ehhack
+======
+
+ehhack is a vim plugin that makes for quick hacking on various languages,
+including (currently), C++, Haskell, Java, and Scala.
+
+Install by copying into your ~/.vim directory, or checking out into a separate
+directory and adding it into your runtime path in your .vimrc, like so:
+
+  let &runtimepath = "/path/to/checkout," . &runtimepath
+
+You will need the "scratch" vim plugin, which provides the scratch buffer for
+the output for ",t".
+
+Key bindings:
+
+  ,t		Compile and run the current quick hack.  If there are compile
+  		errors, go to quickfix mode.  If not, run and open a split
+		with a scratch buffer containing the run's output (stdout and
+		stderr).
+
+  ,d		Compile and debug the current quick hack with gdb after
+  		setting a breakpoint on the current line.
