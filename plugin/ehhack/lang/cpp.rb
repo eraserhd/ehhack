@@ -54,6 +54,7 @@ EOF
 
   def valid_keyword_instance?
     return false if char_preceding_keyword == ?.
+    return false if current_line =~ /^\s*#\s*include[^a-zA-Z0-9_]/
     true
   end
 
