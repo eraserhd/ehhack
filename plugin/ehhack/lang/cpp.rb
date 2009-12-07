@@ -37,6 +37,26 @@ EOF
     end
   end
 
+  def iscsym?(c)
+    (c >= ?a && c <= ?z) || (c >= ?A && c <= ?Z) || (c >= ?0 && c <= ?9) || (c == ?_)
+  end
+
+  def current_line
+    VIM::Buffer.current[VIM::Window.current.cursor[0]]
+  end
+
+  def char_preceding_keyword
+    line = current_line
+    col = VIM::Window.current.cursor[1]-1
+    col -= 1 while col > 0 and iscsym?(line[col])
+    line[col]
+  end
+
+  def valid_keyword_instance?
+    return false if char_preceding_keyword == ?.
+    true
+  end
+
 private
   def compiler
     $CXX_COMPILER || "g++"

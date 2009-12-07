@@ -35,6 +35,9 @@ module Lang
     # Override me to populate the contents of a new file of this language.
     def new_file; end
 
+    # Override me to indicate when a keyword should not be expanded.
+    def valid_keyword_instance?; true; end
+
     def replace_buffer_with_template(template)
       i = 0
       template.split(/\r?\n/).each do |line|

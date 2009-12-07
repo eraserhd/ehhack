@@ -304,6 +304,7 @@ EOF
    
     def include_library_code(name)
       return unless @trigger_map.has_key?(name)
+      return unless Lang.current.valid_keyword_instance?
       @trigger_map[name].each {|lc| lc.include}
     end
 
