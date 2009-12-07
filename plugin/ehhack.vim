@@ -8,7 +8,7 @@ if has('ruby')
     augroup ehhack
       au!
       autocmd BufNewFile,BufRead * ruby EhHack.setup_abbreviations
-      autocmd BufNewFile *.cpp ruby EhHack.new_file
+      autocmd BufNewFile * ruby EhHack.new_file
     augroup END
   endif
 endif

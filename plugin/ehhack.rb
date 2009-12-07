@@ -308,19 +308,7 @@ EOF
     end
 
     def new_file
-      template = <<EOF
-using namespace std;
-
-int main() {
-    return 0;
-}
-EOF
-      i = 0
-      template.split(/\r?\n/).each do |line|
-	VIM::Buffer.current.append(i, line)
-	i += 1
-      end
-      VIM::Window.current.cursor = [3,11]
+      Lang.current.new_file
     end
 
   end

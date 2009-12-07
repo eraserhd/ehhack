@@ -31,14 +31,30 @@ module Lang
   end
 
   class Lang
+
+    # Override me to populate the contents of a new file of this language.
+    def new_file; end
+
+    def replace_buffer_with_template(template)
+      i = 0
+      template.split(/\r?\n/).each do |line|
+        VIM::Buffer.current.append(i, line)
+        i += 1
+      end
+    end
+
   end
 
   def self.get(name)
     $EHHACK_LANG_CACHE ||= Hash.new
     ft = name.capitalize.intern
     return $EHHACK_LANG_CACHE[ft] if $EHHACK_LANG_CACHE.has_key?(ft)
-    return nil unless EhHack::Lang.const_defined?(ft)
-    new_inst = EhHack::Lang.const_get(ft).new
+    if EhHack::Lang.const_defined?(ft)
+      new_inst = EhHack::Lang.const_get(ft).new
+    else
+      # Unknown file type, supply a new Lang instance as a null object
+      new_inst = EhHack::Lang::Lang.new
+    end
     $EHHACK_LANG_CACHE[ft] = new_inst
     new_inst
   end

@@ -12,6 +12,25 @@ class Java < Lang
     "java #{class_name(sourcefile)}"
   end
 
+  def new_file
+    klass = class_name(VIM::Buffer.current.name)
+    replace_buffer_with_template <<EOF
+import java.io.*;
+
+public class #{klass} {
+  
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+EOF
+    VIM::Window.current.cursor = [6,12]
+  end
+
 private
   def class_name(sourcefile)
     sourcefile =~ /^(.*)\.[^\.]*$/
