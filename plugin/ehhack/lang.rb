@@ -50,7 +50,11 @@ module Lang
 
   def self.get(name)
     $EHHACK_LANG_CACHE ||= Hash.new
-    ft = name.capitalize.intern
+    if name == ''
+      ft = :Text
+    else
+      ft = name.capitalize.intern
+    end
     return $EHHACK_LANG_CACHE[ft] if $EHHACK_LANG_CACHE.has_key?(ft)
     if EhHack::Lang.const_defined?(ft)
       new_inst = EhHack::Lang.const_get(ft).new
