@@ -12,9 +12,9 @@ class Java < Lang
     "java #{class_name(sourcefile)}"
   end
 
-  def new_file
-    klass = class_name(VIM::Buffer.current.name)
-    replace_buffer_with_template <<EOF
+  def new_file(vim)
+    klass = class_name(vim.buffer.name)
+    vim.replace_buffer_with_template <<EOF
 import java.io.*;
 
 public class #{klass} {
@@ -28,7 +28,7 @@ public class #{klass} {
 
 }
 EOF
-    VIM::Window.current.cursor = [6,12]
+    vim.window.cursor = [6,12]
   end
 
 private

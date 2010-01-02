@@ -11,8 +11,43 @@
 require File.dirname(__FILE__)+"/ehhack/lang.rb"
 
 module EhHack
-  
+
+  # I provide injectable access to the current Vim state.
+  # 
+  # Code outside of the top-level EhHack class methods do not access VIM::
+  # directly; instead, a VimContext is used so that we can verify operation
+  # under test.
+  class VimContext
+    attr_reader :buffer, :window
+
+    def initialize(buffer = nil, window = nil)
+      @buffer = buffer || VIM::Buffer.current
+      @window = window || VIM::Window.current
+    end
+
+    def command(c)
+      VIM::command(c)
+    end
+
+    def current_line
+      buffer[window.cursor[0]]
+    end
+
+    def replace_buffer_with_template(template)
+      i = 0
+      template.split(/\r?\n/).each do |line|
+        buffer.append(i, line)
+        i += 1
+      end
+    end
+  end
+
   class <<self
+
+    def current_lang
+      Lang.get VIM::evaluate("&ft")
+    end
+
     def tmpfile(name)
       return "/tmp/#{name}" if FileTest.directory?("/tmp")
       return "C:\\temp\\#{name}" if FileTest.directory?("C:\\temp")
@@ -23,7 +58,7 @@ module EhHack
     end
     def compile_and_fix
       VIM::command('write')
-      system(Lang.current.make_compile_command(VIM::Buffer.current.name, extra_flags, tmpfile('errors.vim')))
+      system(current_lang.make_compile_command(VIM::Buffer.current.name, extra_flags, tmpfile('errors.vim')))
       if $? != 0
 	VIM::command("cfile #{tmpfile('errors.vim')}")
 	return false
@@ -39,7 +74,7 @@ module EhHack
       if File.exists?("run.sh")
 	cmd = current_directory_prefix + "run.sh #{problem_name}"
       else
-	cmd = Lang.current.make_run_command(VIM::Buffer.current.name)
+	cmd = current_lang.make_run_command(VIM::Buffer.current.name)
       end
       VIM::command('Sscratch')
       VIM::command('normal ggdG')
@@ -67,7 +102,7 @@ module EhHack
 
     def self.delegate_to_current_lang(sym)
       define_method(sym) do |*args|
-        Lang.current.send(sym, *args)
+        current_lang.send(sym, VimContext.new, *args)
       end
     end
 

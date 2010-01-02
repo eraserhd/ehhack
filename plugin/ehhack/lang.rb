@@ -33,21 +33,10 @@ module Lang
   class Lang
 
     # Override me to populate the contents of a new file of this language.
-    def new_file; end
+    def new_file(vim); end
 
-    # Override me to indicate when a keyword should not be expanded.
-    def valid_keyword_instance?; true; end
-
-    def setup_abbreviations; end
-    def handle_abbreviation(name); end
-
-    def replace_buffer_with_template(template)
-      i = 0
-      template.split(/\r?\n/).each do |line|
-        VIM::Buffer.current.append(i, line)
-        i += 1
-      end
-    end
+    def setup_abbreviations(vim); end
+    def handle_abbreviation(vim, name); end
 
   end
 
@@ -67,10 +56,6 @@ module Lang
     end
     $EHHACK_LANG_CACHE[ft] = new_inst
     new_inst
-  end
-
-  def self.current
-    get VIM::evaluate("&ft")
   end
 
 end

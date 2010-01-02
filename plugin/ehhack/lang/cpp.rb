@@ -10,30 +10,30 @@ class Cpp < Lang
     "#{compiler} -g -Wno-deprecated #{extra_flags} -o #{exe_name(sourcefile)} #{sourcefile} >#{error_file} 2>&1"
   end
 
-  def header?
-    VIM::Buffer.current.name =~ /\.(h|hpp|hxx|hh)$/
+  def header?(vim)
+    vim.buffer.name =~ /\.(h|hpp|hxx|hh)$/
   end
 
-  def new_file
-    if header?
-      guard = File.basename(VIM::Buffer.current.name).gsub(/[^a-zA-Z0-9_]/, "_") + "_INCLUDED"
-      replace_buffer_with_template <<EOF
+  def new_file(vim)
+    if header?(vim)
+      guard = File.basename(vim.buffer.name).gsub(/[^a-zA-Z0-9_]/, "_") + "_INCLUDED"
+      vim.replace_buffer_with_template <<EOF
 #ifndef #{guard}
 #define #{guard}
 
 
 #endif // ndef #{guard}
 EOF
-      VIM::Window.current.cursor = [3,1]
+      vim.window.cursor = [3,1]
     else
-      replace_buffer_with_template <<EOF
+      vim.replace_buffer_with_template <<EOF
 using namespace std;
 
 int main() {
     return 0;
 }
 EOF
-      VIM::Window.current.cursor = [3,11]
+      vim.window.cursor = [3,11]
     end
   end
 
@@ -41,41 +41,37 @@ EOF
     (c >= ?a && c <= ?z) || (c >= ?A && c <= ?Z) || (c >= ?0 && c <= ?9) || (c == ?_)
   end
 
-  def current_line
-    VIM::Buffer.current[VIM::Window.current.cursor[0]]
-  end
-
-  def char_preceding_keyword
-    line = current_line
-    col = VIM::Window.current.cursor[1]-1
+  def char_preceding_keyword(vim)
+    line = vim.current_line
+    col = vim.window.cursor[1]-1
     col -= 1 while col > 0 and iscsym?(line[col])
     line[col]
   end
 
-  def valid_keyword_instance?
-    return false if char_preceding_keyword == ?.
-    return false if current_line =~ /^\s*#\s*include[^a-zA-Z0-9_]/
+  def valid_keyword_instance?(vim)
+    return false if char_preceding_keyword(vim) == ?.
+    return false if vim.current_line =~ /^\s*#\s*include[^a-zA-Z0-9_]/
     true
   end
 
   class Section
-    def includes?(exp)
-      buf = VIM::Buffer.current
+    def includes?(vim, exp)
+      buf = vim.buffer
       buf.count.times do |i|
 	return true if buf[i+1] =~ exp
       end
       false
     end
-    def include(source)
-      buf = VIM::Buffer.current
-      curs = VIM::Window.current.cursor
+    def include(vim, source)
+      buf = vim.buffer
+      curs = vim.window.cursor
       inspt = insertion_point(buf, source)
       source.split(/\r?\n/).each do |line|
 	buf.append(inspt, line)
 	inspt += 1
 	curs[0] += 1 if curs[0] > inspt
       end
-      VIM::Window.current.cursor = curs
+      vim.window.cursor = curs
     end
   end
   class MacroSection <Section
@@ -125,8 +121,8 @@ EOF
     def initialize(attrs)
       attrs.each{|k,v| send("#{k}=",v)}
     end
-    def include
-      section.include(source) unless section.includes?(detect)
+    def include(vim)
+      section.include(vim, source) unless section.includes?(vim, detect)
     end
     def detect
       return @detect if @detect
@@ -274,17 +270,17 @@ vector<string> split(const string& s, const string& delim) {
 }
 EOF
 
-  def setup_abbreviations
+  def setup_abbreviations(vim)
     @@trigger_map.each_key do |kw|
-      VIM::command("iab <buffer> <silent> #{kw} #{kw}"+
-                   "<ESC>:ruby EhHack.handle_abbreviation(:#{kw})<CR>a")
+      vim.command("iab <buffer> <silent> #{kw} #{kw}"+
+                  "<ESC>:ruby EhHack.handle_abbreviation(:#{kw})<CR>a")
     end
   end
 
-  def handle_abbreviation(name)
+  def handle_abbreviation(vim, name)
     return unless @@trigger_map.has_key?(name)
-    return unless valid_keyword_instance?
-    @@trigger_map[name].each {|lc| lc.include}
+    return unless valid_keyword_instance?(vim)
+    @@trigger_map[name].each {|lc| lc.include(vim)}
   end
 
 private
