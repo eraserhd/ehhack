@@ -134,7 +134,12 @@ EOF
   def self.library_code(attrs)
     @@trigger_map ||= {}
     lc = LibraryCode.new(attrs)
-    lc.triggered_by.each do |kw|
+    lc.triggered_by.each do |trigger|
+      kw = if trigger.kind_of?(Symbol)
+             trigger
+           else
+             trigger.split(/::/).last.intern
+           end
       @@trigger_map[kw] ||= []
       @@trigger_map[kw] << lc
     end
@@ -223,6 +228,10 @@ EOF
   header 'ext/numeric' => [ :power ]
   header 'ext/algorithm' => [ :is_sorted ]
 
+  # Boost
+  header 'boost/optional.hpp' => [ 'boost::optional' ]
+
+  # Library code
   library_code :triggered_by => [ :INF ], :section => CodeSection.new,
 	       :detect => (/^const int INF/),
 	       :source => "const int INF = 999999999;"
