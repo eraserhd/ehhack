@@ -229,7 +229,10 @@ EOF
   header 'ext/algorithm' => [ :is_sorted ]
 
   # Boost
+  header 'boost/foreach.hpp' => [ :BOOST_FOREACH ]
   header 'boost/optional.hpp' => [ 'boost::optional' ]
+  header 'boost/tuple/tuple.hpp' => [ 'boost::tuple' ]
+  header 'boost/typeof/typeof.hpp' => [ :BOOST_AUTO, :BOOST_AUTO_TPL, :BOOST_TYPEOF ]
 
   # Library code
   library_code :triggered_by => [ :INF ], :section => CodeSection.new,
